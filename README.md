@@ -1,1 +1,1 @@
-# akash-images
+# Akash Image Generator!
