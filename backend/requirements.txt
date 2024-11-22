@@ -6,3 +6,4 @@ ftfy
 accelerate
 protobuf==3.20.1
 celery[redis]
+python-socketio[asyncio]

@@ -13,13 +13,27 @@ import io
 from celery import Celery
 from celery.result import AsyncResult
 
+import socketio
+
+socketio_server = socketio.AsyncServer(async_mode="asgi")
+
 # from kombu.serialization import register
 # import pydanticserializer
 
-app = FastAPI()
+fastapi_app = FastAPI()
+
+static_files = {
+    '/static': '../frontend/build/static',
+}
+
+app = socketio.ASGIApp(
+    socketio_server=socketio_server,
+    other_asgi_app=fastapi_app,
+    static_files=static_files,
+)
 
 templates = Jinja2Templates(directory="../frontend/build")
-app.mount('/static', StaticFiles(directory="../frontend/build/static"), 'static')
+#app.mount('/static', StaticFiles(directory="../frontend/build/static"), 'static')
 
 # # register(
 # #     "pydantic",
@@ -49,12 +63,12 @@ app.mount('/static', StaticFiles(directory="../frontend/build/static"), 'static'
 #     accept_content = ['application/json', 'application/x-python-serialize'],
 # )
 
-@app.get('/api/health')
+@fastapi_app.get('/api/health')
 async def health():
     return { 'status': 'healthy' }
 
 
-@app.get("/api")
+@fastapi_app.get("/api")
 async def root():
     return {"message": "Hello there"}
 
@@ -72,7 +86,7 @@ async def root():
 
 
 
-@app.get("/api/generate2/")
+@fastapi_app.get("/api/generate2/")
 async def generate_image2(imgPromptCreate: _schemas.ImageCreate = fastapi.Depends()):
     print('called /api/generate2 endpoint', imgPromptCreate)
     result = services.celery.send_task('services.generate_image_task', args=[imgPromptCreate])
@@ -80,7 +94,7 @@ async def generate_image2(imgPromptCreate: _schemas.ImageCreate = fastapi.Depend
 
 
 
-@app.get("/task_status/{task_id}")
+@fastapi_app.get("/task_status/{task_id}")
 async def task_status(task_id: str):
     result = AsyncResult(task_id, app=services.celery)
     if result.ready():
@@ -88,7 +102,7 @@ async def task_status(task_id: str):
     else:
         return {"status": "pending"}
 
-@app.get("/image/{task_id}")
+@fastapi_app.get("/image/{task_id}")
 async def get_image(task_id: str):
     result = AsyncResult(task_id, app=services.celery)
     if result.ready():
@@ -103,7 +117,7 @@ async def get_image(task_id: str):
         return {"status": "pending"}
 
 # Serve the react app's static files
-@app.get("/{rest_of_path:path}")
+@fastapi_app.get("/{rest_of_path:path}")
 async def react_app(req: Request, rest_of_path: str):
     print(f'Rest of path: {rest_of_path}')
     return templates.TemplateResponse('index.html', { 'request': req })
