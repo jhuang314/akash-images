@@ -8,6 +8,12 @@ import os
 from dotenv import load_dotenv
 
 from celery import shared_task, Celery, Task
+from celery.signals import task_success
+
+from socket_handler import sio
+import socketio
+
+from asgiref import sync
 
 celery = Celery(
     'tasks',
@@ -21,7 +27,7 @@ celery.conf.update(
     accept_content = ['application/json', 'application/x-python-serialize'],
 )
 
-
+external_sio = socketio.RedisManager('redis://localhost:6379/0', write_only=True)
 
 load_dotenv()
 HF_TOKEN = os.getenv('HF_TOKEN')
@@ -97,6 +103,7 @@ async def generate_image(imgPrompt: schemas.ImageCreate) -> Image:
 def generate_image_task(self, imgPrompt: schemas.ImageCreate) -> Image:
     generator = None if imgPrompt.seed is None else torch.Generator().manual_seed(int(imgPrompt.seed))
 
+
     image: Image = self.pipe(
         prompt=imgPrompt.prompt,
         negative_prompt=imgPrompt.negative_prompt,
@@ -106,3 +113,13 @@ def generate_image_task(self, imgPrompt: schemas.ImageCreate) -> Image:
     ).images[0]
 
     return image
+
+
+@task_success.connect(sender=generate_image_task)
+def task_success_notifier(sender=None, **kwargs):
+
+    taskId = sender.request.id
+
+    external_sio.emit('task completed', {'taskId': taskId})
+
+    print("From task_success_notifier ==> Task run successfully!")

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ErrorMessage from "./ErrorMessage";
 import ImageResult from "./ImageResult";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretUp, faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { socket } from "../socket";
 
 const INITIAL_GUIDANCE = 7.5;
 const INITIAL_STEPS = 5;
@@ -18,7 +19,8 @@ export default function ImageGenerator() {
   const [loadingImg, setLoadingImg] = useState(false);
   const [moreOptions, setMoreOptions] = useState(false);
   // array of {img, imgPrompt}
-  const [images, setImages] = useState([]);
+  // const [images, setImages] = useState([]);
+  const [tasks, setTasks] = useState([]);
 
   const cleanFormData = () => {
     setPrompt("");
@@ -35,6 +37,49 @@ export default function ImageGenerator() {
     setMoreOptions(!moreOptions);
   };
 
+  // create a function that handles fetching new image
+  const fetchNewImage = useCallback(
+    async (taskId) => {
+      const requestOptions = {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      };
+
+      // setLoadingImg(false);
+
+      const response = await fetch(`/image/${taskId}`, requestOptions);
+
+      if (!response.ok) {
+        setErrorMessage("Ooops! Something went wrong fetching the image");
+        setLoadingImg(false);
+      } else {
+        const imageBlob = await response.blob();
+        const imageObjectURL = URL.createObjectURL(imageBlob);
+
+        const newTasks = [...tasks];
+        const taskToUpdate = newTasks.find((t) => t.taskId === taskId);
+        if (taskToUpdate) {
+          taskToUpdate.img = imageObjectURL;
+        }
+
+        setTasks(newTasks);
+      }
+    },
+    [tasks],
+  );
+
+  useEffect(() => {
+    const taskCompleted = async (t) => {
+      await fetchNewImage(t.taskId);
+    };
+
+    socket.on("task completed", taskCompleted);
+
+    return () => {
+      socket.off("task completed", taskCompleted);
+    };
+  }, [tasks, fetchNewImage]);
+
   // create a function that handles creating the lead
   const handleGenerateImage = async (e) => {
     const requestOptions = {
@@ -45,7 +90,7 @@ export default function ImageGenerator() {
     setLoadingImg(true);
 
     const response = await fetch(
-      `/api/generate/?prompt=${prompt}&negative_prompt=${negativePrompt}&num_inference_steps=${numInfSteps}&guidance_scale=${guidanceScale}&seed=${seed}`,
+      `/api/generate2/?prompt=${prompt}&negative_prompt=${negativePrompt}&num_inference_steps=${numInfSteps}&guidance_scale=${guidanceScale}&seed=${seed}`,
       requestOptions,
     );
 
@@ -53,14 +98,40 @@ export default function ImageGenerator() {
       setErrorMessage("Ooops! Something went wrong generating the image");
       setLoadingImg(false);
     } else {
-      const imageBlob = await response.blob();
-      const imageObjectURL = URL.createObjectURL(imageBlob);
+      const { task_id } = await response.json();
 
-      setImages([{ img: imageObjectURL, promptImg: prompt }, ...images]);
+      setTasks([{ taskId: task_id, promptImg: prompt }, ...tasks]);
 
       cleanFormData();
     }
   };
+
+  // create a function that handles creating the lead
+  // const handleGenerateImageOriginal = async (e) => {
+  //   const requestOptions = {
+  //     method: "GET",
+  //     headers: { "Content-Type": "application/json" },
+  //   };
+
+  //   setLoadingImg(true);
+
+  //   const response = await fetch(
+  //     `/api/generate/?prompt=${prompt}&negative_prompt=${negativePrompt}&num_inference_steps=${numInfSteps}&guidance_scale=${guidanceScale}&seed=${seed}`,
+  //     requestOptions,
+  //   );
+
+  //   if (!response.ok) {
+  //     setErrorMessage("Ooops! Something went wrong generating the image");
+  //     setLoadingImg(false);
+  //   } else {
+  //     const imageBlob = await response.blob();
+  //     const imageObjectURL = URL.createObjectURL(imageBlob);
+
+  //     setImages([{ img: imageObjectURL, promptImg: prompt }, ...images]);
+
+  //     cleanFormData();
+  //   }
+  // };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -173,9 +244,16 @@ export default function ImageGenerator() {
         <></>
       )}
 
-      {images.map(({ img, promptImg }) => (
-        <ImageResult img={img} promptImg={promptImg} key={img} />
+      {/* {tasks.map((t) => (
+        <div>{t.taskId}</div>
+      ))} */}
+      {tasks.map(({ img, promptImg, taskId }, i) => (
+        <ImageResult img={img} promptImg={promptImg} taskId={taskId} key={i} />
       ))}
+
+      {/* {images.map(({ img, promptImg }) => (
+        <ImageResult img={img} promptImg={promptImg} key={img} />
+      ))} */}
     </>
   );
 }

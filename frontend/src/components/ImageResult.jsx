@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function ImageResult({ img, promptImg }) {
+export default function ImageResult({ img, promptImg, taskId }) {
   return (
     <div className="column">
       {img ? (
@@ -9,7 +9,14 @@ export default function ImageResult({ img, promptImg }) {
           <figcaption>{promptImg}</figcaption>
         </figure>
       ) : (
-        <></>
+        <>
+          <figure>
+            <figcaption>Generating image for "{promptImg}"</figcaption>
+          </figure>
+          <progress className="progress is-small is-primary" max="100">
+            Loading
+          </progress>
+        </>
       )}
     </div>
   );

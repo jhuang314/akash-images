@@ -12,10 +12,10 @@ import io
 
 from celery import Celery
 from celery.result import AsyncResult
+from celery.signals import task_success
 
 import socketio
-
-socketio_server = socketio.AsyncServer(async_mode="asgi")
+from socket_handler import sio
 
 # from kombu.serialization import register
 # import pydanticserializer
@@ -27,7 +27,7 @@ static_files = {
 }
 
 app = socketio.ASGIApp(
-    socketio_server=socketio_server,
+    socketio_server=sio,
     other_asgi_app=fastapi_app,
     static_files=static_files,
 )
@@ -90,6 +90,7 @@ async def root():
 async def generate_image2(imgPromptCreate: _schemas.ImageCreate = fastapi.Depends()):
     print('called /api/generate2 endpoint', imgPromptCreate)
     result = services.celery.send_task('services.generate_image_task', args=[imgPromptCreate])
+
     return {"message": "Task submitted", "task_id": result.id}
 
 
