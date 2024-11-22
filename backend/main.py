@@ -17,8 +17,6 @@ from celery.signals import task_success
 import socketio
 from socket_handler import sio
 
-# from kombu.serialization import register
-# import pydanticserializer
 
 fastapi_app = FastAPI()
 
@@ -33,35 +31,7 @@ app = socketio.ASGIApp(
 )
 
 templates = Jinja2Templates(directory="../frontend/build")
-#app.mount('/static', StaticFiles(directory="../frontend/build/static"), 'static')
 
-# # register(
-# #     "pydantic",
-# #     pydanticserializer.pydantic_dumps,
-# #     pydanticserializer.pydantic_loads,
-# #     content_type="application/x-pydantic",
-# #     content_encoding="utf-8",
-# # )
-
-# celery = Celery(
-#     'tasks',
-#     broker='redis://localhost:6379/0',
-#     backend='redis://localhost:6379/0',
-# )
-
-# # celery.conf.update(
-# #     task_serializer="pydantic",
-# #     result_serializer="pydantic",
-# #     event_serializer="pydantic",
-# #     accept_content=["application/json", "application/x-pydantic"],
-# #     result_accept_content=["application/json", "application/x-pydantic"],
-# # )
-# celery.conf.update(
-#     event_serializer='pickle',
-#     task_serializer='pickle',
-#     result_serializer='pickle',
-#     accept_content = ['application/json', 'application/x-python-serialize'],
-# )
 
 @fastapi_app.get('/api/health')
 async def health():
@@ -72,23 +42,10 @@ async def health():
 async def root():
     return {"message": "Hello there"}
 
-# @app.get("/api/generate/")
-# async def generate_image(imgPromptCreate: _schemas.ImageCreate = fastapi.Depends()):
-#     print('called /api/generate endpoint', imgPromptCreate)
-#     image = await services.generate_image(imgPrompt=imgPromptCreate)
 
-#     memory_stream = io.BytesIO()
-#     image.save(memory_stream, format="PNG")
-#     memory_stream.seek(0)
-#     return StreamingResponse(memory_stream, media_type="image/png")
-
-
-
-
-
-@fastapi_app.get("/api/generate2/")
+@fastapi_app.get("/api/generate/")
 async def generate_image2(imgPromptCreate: _schemas.ImageCreate = fastapi.Depends()):
-    print('called /api/generate2 endpoint', imgPromptCreate)
+    print('called /api/generate endpoint', imgPromptCreate)
     result = services.celery.send_task('services.generate_image_task', args=[imgPromptCreate])
 
     return {"message": "Task submitted", "task_id": result.id}

@@ -17,25 +17,17 @@ export default function App() {
       setIsConnected(false);
     }
 
-    // function onFooEvent(value) {
-    //   console.log("task done", value);
-    //   setFooEvents((previous) => [...previous, value]);
-    // }
-
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
-    // socket.on("task completed", onFooEvent);
 
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
-      // socket.off("foo", onFooEvent);
     };
   }, []);
 
   return (
     <>
-      <p>State: {"" + isConnected}</p>
       <div className="columns">
         <div className="column">
           <Header />

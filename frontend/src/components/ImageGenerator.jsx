@@ -16,10 +16,8 @@ export default function ImageGenerator() {
   const [guidanceScale, setGuidanceScale] = useState(INITIAL_GUIDANCE);
   const [numInfSteps, setNumInfSteps] = useState(INITIAL_STEPS);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loadingImg, setLoadingImg] = useState(false);
   const [moreOptions, setMoreOptions] = useState(false);
-  // array of {img, imgPrompt}
-  // const [images, setImages] = useState([]);
+
   const [tasks, setTasks] = useState([]);
 
   const cleanFormData = () => {
@@ -28,7 +26,6 @@ export default function ImageGenerator() {
     setSeed(SEED);
     setGuidanceScale(INITIAL_GUIDANCE);
     setNumInfSteps(INITIAL_STEPS);
-    setLoadingImg(false);
     setErrorMessage("");
   };
 
@@ -45,13 +42,10 @@ export default function ImageGenerator() {
         headers: { "Content-Type": "application/json" },
       };
 
-      // setLoadingImg(false);
-
       const response = await fetch(`/image/${taskId}`, requestOptions);
 
       if (!response.ok) {
         setErrorMessage("Ooops! Something went wrong fetching the image");
-        setLoadingImg(false);
       } else {
         const imageBlob = await response.blob();
         const imageObjectURL = URL.createObjectURL(imageBlob);
@@ -80,23 +74,20 @@ export default function ImageGenerator() {
     };
   }, [tasks, fetchNewImage]);
 
-  // create a function that handles creating the lead
+  // generate an image, and save the job's taskId.
   const handleGenerateImage = async (e) => {
     const requestOptions = {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     };
 
-    setLoadingImg(true);
-
     const response = await fetch(
-      `/api/generate2/?prompt=${prompt}&negative_prompt=${negativePrompt}&num_inference_steps=${numInfSteps}&guidance_scale=${guidanceScale}&seed=${seed}`,
+      `/api/generate/?prompt=${prompt}&negative_prompt=${negativePrompt}&num_inference_steps=${numInfSteps}&guidance_scale=${guidanceScale}&seed=${seed}`,
       requestOptions,
     );
 
     if (!response.ok) {
       setErrorMessage("Ooops! Something went wrong generating the image");
-      setLoadingImg(false);
     } else {
       const { task_id } = await response.json();
 
@@ -105,33 +96,6 @@ export default function ImageGenerator() {
       cleanFormData();
     }
   };
-
-  // create a function that handles creating the lead
-  // const handleGenerateImageOriginal = async (e) => {
-  //   const requestOptions = {
-  //     method: "GET",
-  //     headers: { "Content-Type": "application/json" },
-  //   };
-
-  //   setLoadingImg(true);
-
-  //   const response = await fetch(
-  //     `/api/generate/?prompt=${prompt}&negative_prompt=${negativePrompt}&num_inference_steps=${numInfSteps}&guidance_scale=${guidanceScale}&seed=${seed}`,
-  //     requestOptions,
-  //   );
-
-  //   if (!response.ok) {
-  //     setErrorMessage("Ooops! Something went wrong generating the image");
-  //     setLoadingImg(false);
-  //   } else {
-  //     const imageBlob = await response.blob();
-  //     const imageObjectURL = URL.createObjectURL(imageBlob);
-
-  //     setImages([{ img: imageObjectURL, promptImg: prompt }, ...images]);
-
-  //     cleanFormData();
-  //   }
-  // };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -158,7 +122,6 @@ export default function ImageGenerator() {
               </div>
             </div>
             <div className="control">
-              {/* <label className="label">More Options</label> */}
               <button className="button is-large" onClick={toggleMoreOptions}>
                 <span className="icon">
                   {moreOptions ? (
@@ -234,26 +197,10 @@ export default function ImageGenerator() {
           </button>
         </form>
       </div>
-      {loadingImg ? (
-        <div className="column">
-          <progress className="progress is-small is-primary" max="100">
-            Loading
-          </progress>
-        </div>
-      ) : (
-        <></>
-      )}
 
-      {/* {tasks.map((t) => (
-        <div>{t.taskId}</div>
-      ))} */}
       {tasks.map(({ img, promptImg, taskId }, i) => (
         <ImageResult img={img} promptImg={promptImg} taskId={taskId} key={i} />
       ))}
-
-      {/* {images.map(({ img, promptImg }) => (
-        <ImageResult img={img} promptImg={promptImg} key={img} />
-      ))} */}
     </>
   );
 }
