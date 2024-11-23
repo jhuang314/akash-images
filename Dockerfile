@@ -4,15 +4,33 @@ ENV PYTHONPATH="$PYTHONPATH:/app"
 
 EXPOSE 5000
 
-COPY . /app
-WORKDIR /app/frontend
-
-RUN npm install
-RUN npm run build
-
+# Multi-stage build for separation
+# Stage 1: Build environment
 WORKDIR /app/backend
 
+COPY ./backend/requirements.txt ./
 RUN pip install -r requirements.txt
 
 
-ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
+WORKDIR /app/frontend
+
+COPY ./frontend/package.json ./
+COPY ./frontend/package-lock.json ./
+
+RUN npm install
+
+
+
+WORKDIR /
+
+COPY . /app
+#COPY . .  # Copy everything here (includes frontend and backend)
+
+
+WORKDIR /app/frontend
+
+RUN npm run build
+
+
+WORKDIR /app/backend
+#ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
