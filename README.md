@@ -1,6 +1,12 @@
 # Akash Image Generator!
 
 
+# Important env vars
+```
+HF_TOKEN=<hugging face token used to download transformer models>
+REDIS_URL=instance of redis (localhost:6379 if running locally, or redis:6379 if deployed)
+```
+
 # Docker image building
 
 ```bash

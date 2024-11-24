@@ -33,4 +33,7 @@ RUN npm run build
 
 
 WORKDIR /app/backend
+
+RUN chmod +x start_celery.sh
+RUN chmod +x start_web.sh
 #ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]

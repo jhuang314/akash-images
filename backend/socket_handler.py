@@ -1,12 +1,17 @@
 import socketio
+from dotenv import load_dotenv
+import os
 
-mgr = socketio.AsyncRedisManager('redis://localhost:6379/0')
+load_dotenv()
 
-sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins=[
-    'http://localhost:5000',
-    'http://localhost:3000',
-    'https://admin.socket.io',
-    ],
+# localhost redis: localhost:6379
+# docker: redis:6379
+REDIS_URL = os.getenv('REDIS_URL')
+mgr = socketio.AsyncRedisManager('redis://{}/0'.format(REDIS_URL))
+
+sio = socketio.AsyncServer(
+    async_mode="asgi",
+    cors_allowed_origins='*',
     client_manager=mgr,
 )
 
