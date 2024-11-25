@@ -14,6 +14,13 @@ services:
   worker:
     build: ./
     command: celery -A services.celery worker --pool=solo --loglevel=info --concurrency=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     volumes:
       - ./:/app
     depends_on:
@@ -22,4 +29,4 @@ services:
   redis:
     image: redis:alpine
     ports:
-      - "6379:7379"
+      - "6379:6379"

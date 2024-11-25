@@ -73,9 +73,23 @@ class GenerateImageTask(Task):
         return self.run(*args, **kwargs)
 
 
+
+
+
 @shared_task(bind=True, base = GenerateImageTask)
 def generate_image_task(self, imgPrompt: schemas.ImageCreate) -> Image:
     generator = None if imgPrompt.seed is None else torch.Generator().manual_seed(int(imgPrompt.seed))
+
+    taskId = self.request.id
+
+    def decode_tensors(pipe, step, timestep, callback_kwargs):
+        # latents = callback_kwargs["latents"]
+
+        # image = latents_to_rgb(latents[0])
+        # image.save(f"{step}.png")
+        external_sio.emit('task updated', {'taskId': taskId, 'iteration': step+1})
+
+        return callback_kwargs
 
 
     image: Image = self.pipe(
@@ -84,6 +98,8 @@ def generate_image_task(self, imgPrompt: schemas.ImageCreate) -> Image:
         guidance_scale=imgPrompt.guidance_scale,
         num_inference_steps=imgPrompt.num_inference_steps,
         generator = generator,
+        callback_on_step_end=decode_tensors,
+        callback_on_step_end_tensor_inputs=["latents"],
     ).images[0]
 
     return image

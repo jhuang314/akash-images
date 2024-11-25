@@ -69,8 +69,21 @@ export default function ImageGenerator() {
 
     socket.on("task completed", taskCompleted);
 
+    const taskUpdate = async (t) => {
+      const newTasks = [...tasks];
+      const taskToUpdate = newTasks.find((task) => task.taskId === t.taskId);
+      if (taskToUpdate) {
+        taskToUpdate.iteration = t.iteration;
+      }
+
+      setTasks(newTasks);
+    };
+
+    socket.on("task updated", taskUpdate);
+
     return () => {
       socket.off("task completed", taskCompleted);
+      socket.off("task updated", taskUpdate);
     };
   }, [tasks, fetchNewImage]);
 
@@ -91,7 +104,15 @@ export default function ImageGenerator() {
     } else {
       const { task_id } = await response.json();
 
-      setTasks([{ taskId: task_id, promptImg: prompt }, ...tasks]);
+      setTasks([
+        {
+          taskId: task_id,
+          promptImg: prompt,
+          iteration: 0,
+          totalIteration: numInfSteps,
+        },
+        ...tasks,
+      ]);
 
       cleanFormData();
     }
@@ -198,8 +219,15 @@ export default function ImageGenerator() {
         </form>
       </div>
 
-      {tasks.map(({ img, promptImg, taskId }, i) => (
-        <ImageResult img={img} promptImg={promptImg} taskId={taskId} key={i} />
+      {tasks.map(({ img, promptImg, taskId, iteration, totalIteration }, i) => (
+        <ImageResult
+          img={img}
+          promptImg={promptImg}
+          taskId={taskId}
+          iteration={iteration}
+          totalIteration={totalIteration}
+          key={i}
+        />
       ))}
     </>
   );
