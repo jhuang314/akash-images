@@ -6,7 +6,7 @@ import { faCaretUp, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../socket";
 
 const INITIAL_GUIDANCE = 7.5;
-const INITIAL_STEPS = 5;
+const INITIAL_STEPS = 50;
 const SEED = 1337;
 
 export default function ImageGenerator() {

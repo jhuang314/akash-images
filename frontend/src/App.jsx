@@ -1,20 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { socket } from "./socket";
 import ImageGenerator from "./components/ImageGenerator";
 import Header from "./components/Header";
 
 export default function App() {
-  const [isConnected, setIsConnected] = useState(socket.connected);
-
   useEffect(() => {
     function onConnect() {
       console.log("ws connected");
-      setIsConnected(true);
     }
 
     function onDisconnect() {
       console.log("ws disconnected");
-      setIsConnected(false);
     }
 
     socket.on("connect", onConnect);
