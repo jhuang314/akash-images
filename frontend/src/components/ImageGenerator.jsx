@@ -108,6 +108,9 @@ export default function ImageGenerator() {
         {
           taskId: task_id,
           promptImg: prompt,
+          negativePrompt: negativePrompt,
+          guidanceScale: guidanceScale,
+          seed: seed,
           iteration: 0,
           totalIteration: numInfSteps,
         },
@@ -219,16 +222,33 @@ export default function ImageGenerator() {
         </form>
       </div>
 
-      {tasks.map(({ img, promptImg, taskId, iteration, totalIteration }, i) => (
-        <ImageResult
-          img={img}
-          promptImg={promptImg}
-          taskId={taskId}
-          iteration={iteration}
-          totalIteration={totalIteration}
-          key={i}
-        />
-      ))}
+      {tasks.map(
+        (
+          {
+            img,
+            promptImg,
+            taskId,
+            iteration,
+            totalIteration,
+            negativePrompt,
+            seed,
+            guidanceScale,
+          },
+          i,
+        ) => (
+          <ImageResult
+            img={img}
+            promptImg={promptImg}
+            taskId={taskId}
+            iteration={iteration}
+            totalIteration={totalIteration}
+            negativePrompt={negativePrompt}
+            seed={seed}
+            guidanceScale={guidanceScale}
+            key={i}
+          />
+        ),
+      )}
     </>
   );
 }

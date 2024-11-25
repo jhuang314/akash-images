@@ -6,22 +6,44 @@ export default function ImageResult({
   taskId,
   iteration,
   totalIteration,
+  negativePrompt,
+  seed,
+  guidanceScale,
 }) {
   return (
     <div className="column">
       {img ? (
         <figure>
           <img src={img} alt="genimage" />
-          <figcaption>{promptImg}</figcaption>
+          <figcaption>Prompt: "{promptImg}"</figcaption>
+          <figcaption>Total Steps: {totalIteration}</figcaption>
+          {negativePrompt ? (
+            <figcaption>Negative Prompt: "{negativePrompt}"</figcaption>
+          ) : (
+            <></>
+          )}
+          {seed ? <figcaption>Seed: "{seed}"</figcaption> : <></>}
+          {guidanceScale ? (
+            <figcaption>Guidance Scale: "{guidanceScale}"</figcaption>
+          ) : (
+            <></>
+          )}
         </figure>
       ) : (
         <>
           <figure>
-            <figcaption>
-              {" "}
-              ({iteration} / {totalIteration}) Generating image for "{promptImg}
-              "
-            </figcaption>
+            {iteration == 0 ? (
+              <figcaption>
+                {" "}
+                (Queued...) Generating image for "{promptImg}"
+              </figcaption>
+            ) : (
+              <figcaption>
+                {" "}
+                ({iteration} / {totalIteration}) Generating image for "
+                {promptImg}"
+              </figcaption>
+            )}
           </figure>
           <progress
             className="progress is-small is-primary"
