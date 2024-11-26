@@ -9,11 +9,12 @@ export default function ImageResult({
   negativePrompt,
   seed,
   guidanceScale,
+  partialImg,
 }) {
   return (
     <div className="column">
       {img ? (
-        <figure>
+        <figure className="image">
           <img src={img} alt="genimage" />
           <figcaption>Prompt: "{promptImg}"</figcaption>
           <figcaption>Total Steps: {totalIteration}</figcaption>
@@ -31,7 +32,14 @@ export default function ImageResult({
         </figure>
       ) : (
         <>
-          <figure>
+          {/* <progress
+            className="progress is-small is-primary"
+            value={iteration}
+            max={totalIteration}
+          >
+            Loading
+          </progress> */}
+          <figure className="image">
             {iteration == 0 ? (
               <figcaption>
                 {" "}
@@ -44,16 +52,11 @@ export default function ImageResult({
                 {promptImg}"
               </figcaption>
             )}
+            <img src={partialImg} />
           </figure>
-          <progress
-            className="progress is-small is-primary"
-            value={iteration}
-            max={totalIteration}
-          >
-            Loading
-          </progress>
         </>
       )}
+      <hr />
     </div>
   );
 }

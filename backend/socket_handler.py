@@ -13,6 +13,7 @@ sio = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins='*',
     client_manager=mgr,
+    max_http_buffer_size=1e8,
 )
 
 

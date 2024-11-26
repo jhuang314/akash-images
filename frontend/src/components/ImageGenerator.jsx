@@ -9,6 +9,13 @@ const INITIAL_GUIDANCE = 7.5;
 const INITIAL_STEPS = 50;
 const SEED = 1337;
 
+const base64ImageToUrl = (base64Image) => {
+  const imageBinary = atob(base64Image);
+  const imageArrayBuffer = Uint8Array.from(imageBinary, (c) => c.charCodeAt(0));
+  const blob = new Blob([imageArrayBuffer], { type: "image/jpg" });
+  return URL.createObjectURL(blob);
+};
+
 export default function ImageGenerator() {
   const [prompt, setPrompt] = useState("");
   const [negativePrompt, setNegativePrompt] = useState("");
@@ -74,6 +81,7 @@ export default function ImageGenerator() {
       const taskToUpdate = newTasks.find((task) => task.taskId === t.taskId);
       if (taskToUpdate) {
         taskToUpdate.iteration = t.iteration;
+        taskToUpdate.partialImg = base64ImageToUrl(t.image64);
       }
 
       setTasks(newTasks);
@@ -233,6 +241,7 @@ export default function ImageGenerator() {
             negativePrompt,
             seed,
             guidanceScale,
+            partialImg,
           },
           i,
         ) => (
@@ -245,6 +254,7 @@ export default function ImageGenerator() {
             negativePrompt={negativePrompt}
             seed={seed}
             guidanceScale={guidanceScale}
+            partialImg={partialImg}
             key={i}
           />
         ),

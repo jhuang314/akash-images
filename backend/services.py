@@ -3,6 +3,9 @@ import schemas
 
 import torch
 from diffusers import StableDiffusionPipeline, StableDiffusion3Pipeline
+from diffusers.pipelines.stable_diffusion_3.pipeline_output import StableDiffusion3PipelineOutput
+import base64
+from io import BytesIO
 from PIL.Image import Image
 import os
 from dotenv import load_dotenv
@@ -74,6 +77,13 @@ class GenerateImageTask(Task):
 
 
 
+def latents_to_rgb(latents,pipe):
+    latents = (latents / pipe.vae.config.scaling_factor) + pipe.vae.config.shift_factor
+
+    img = pipe.vae.decode(latents, return_dict=False)[0]
+    img = pipe.image_processor.postprocess(img, output_type="pil")
+
+    return StableDiffusion3PipelineOutput(images=img).images[0]
 
 
 @shared_task(bind=True, base = GenerateImageTask)
@@ -83,11 +93,15 @@ def generate_image_task(self, imgPrompt: schemas.ImageCreate) -> Image:
     taskId = self.request.id
 
     def decode_tensors(pipe, step, timestep, callback_kwargs):
-        # latents = callback_kwargs["latents"]
+        latents = callback_kwargs["latents"]
 
-        # image = latents_to_rgb(latents[0])
-        # image.save(f"{step}.png")
-        external_sio.emit('task updated', {'taskId': taskId, 'iteration': step+1})
+        image = latents_to_rgb(latents, pipe)
+
+        buffered = BytesIO()
+        image.save(buffered, format="JPEG", optimize=True, quality=25)
+        image_encoded = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+        external_sio.emit('task updated', {'taskId': taskId, 'iteration': step + 1, 'image64': image_encoded})
 
         return callback_kwargs
 
