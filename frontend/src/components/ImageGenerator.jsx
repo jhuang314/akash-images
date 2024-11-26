@@ -4,6 +4,7 @@ import ImageResult from "./ImageResult";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretUp, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../socket";
+import ImageResultCell from "./ImageResultCell";
 
 const INITIAL_GUIDANCE = 7.5;
 const INITIAL_STEPS = 50;
@@ -229,7 +230,39 @@ export default function ImageGenerator() {
           </button>
         </form>
       </div>
-
+      <div className="column">
+        <div className="grid">
+          {tasks.map(
+            (
+              {
+                img,
+                promptImg,
+                taskId,
+                iteration,
+                totalIteration,
+                negativePrompt,
+                seed,
+                guidanceScale,
+                partialImg,
+              },
+              i,
+            ) => (
+              <ImageResultCell
+                img={img}
+                promptImg={promptImg}
+                taskId={taskId}
+                iteration={iteration}
+                totalIteration={totalIteration}
+                negativePrompt={negativePrompt}
+                seed={seed}
+                guidanceScale={guidanceScale}
+                partialImg={partialImg}
+                key={i}
+              />
+            ),
+          )}
+        </div>
+      </div>
       {tasks.map(
         (
           {
