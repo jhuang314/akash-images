@@ -40,7 +40,7 @@ export default function ImageResult({
             Loading
           </progress> */}
           <figure className="image">
-            {iteration == 0 ? (
+            {iteration === 0 ? (
               <figcaption>
                 {" "}
                 (Queued...) Generating image for "{promptImg}"
@@ -52,7 +52,7 @@ export default function ImageResult({
                 {promptImg}"
               </figcaption>
             )}
-            <img src={partialImg} />
+            <img src={partialImg} alt="partially generated image" />
           </figure>
         </>
       )}
