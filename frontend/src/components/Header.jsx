@@ -1,10 +1,25 @@
-import React from "react";
+import React, { useContext } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMoon,
+  faSun,
+  faBorderAll,
+  faGripLinesVertical,
+} from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
+import { LayoutContext } from "../layout";
 
 export default function Header() {
   const [lightTheme, setLightTheme] = useState(false);
+  const { layout, setLayout } = useContext(LayoutContext);
+
+  const toggleLayout = () => {
+    if (layout === "grid") {
+      setLayout("column");
+    } else {
+      setLayout("grid");
+    }
+  };
 
   const toggleTheme = () => {
     setLightTheme(!lightTheme);
@@ -30,6 +45,15 @@ export default function Header() {
         <div className="navbar-end">
           <div className="navbar-item">
             <div className="buttons">
+              <button className="button" onClick={toggleLayout}>
+                <span className="icon">
+                  {layout === "column" ? (
+                    <FontAwesomeIcon icon={faGripLinesVertical} />
+                  ) : (
+                    <FontAwesomeIcon icon={faBorderAll} />
+                  )}
+                </span>
+              </button>
               <button className="button" onClick={toggleTheme}>
                 <span className="icon">
                   {lightTheme ? (

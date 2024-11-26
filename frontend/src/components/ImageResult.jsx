@@ -15,7 +15,7 @@ export default function ImageResult({
     <div className="column">
       {img ? (
         <figure className="image">
-          <img src={img} alt="genimage" />
+          <img src={img} alt="generated" />
           <figcaption>Prompt: "{promptImg}"</figcaption>
           <figcaption>Total Steps: {totalIteration}</figcaption>
           {negativePrompt ? (
@@ -52,7 +52,7 @@ export default function ImageResult({
                 {promptImg}"
               </figcaption>
             )}
-            <img src={partialImg} alt="partially generated image" />
+            <img src={partialImg} alt="partially generated " />
           </figure>
         </>
       )}

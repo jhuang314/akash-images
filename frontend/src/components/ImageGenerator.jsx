@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import ErrorMessage from "./ErrorMessage";
 import ImageResult from "./ImageResult";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretUp, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../socket";
 import ImageResultCell from "./ImageResultCell";
+import { LayoutContext } from "../layout";
 
 const INITIAL_GUIDANCE = 7.5;
 const INITIAL_STEPS = 50;
@@ -27,6 +28,8 @@ export default function ImageGenerator() {
   const [moreOptions, setMoreOptions] = useState(false);
 
   const [tasks, setTasks] = useState([]);
+
+  const { layout } = useContext(LayoutContext);
 
   const cleanFormData = () => {
     setPrompt("");
@@ -230,8 +233,42 @@ export default function ImageGenerator() {
           </button>
         </form>
       </div>
-      <div className="column">
-        <div className="grid">
+      {layout === "grid" ? (
+        <div className="column">
+          <div className="grid">
+            {tasks.map(
+              (
+                {
+                  img,
+                  promptImg,
+                  taskId,
+                  iteration,
+                  totalIteration,
+                  negativePrompt,
+                  seed,
+                  guidanceScale,
+                  partialImg,
+                },
+                i,
+              ) => (
+                <ImageResultCell
+                  img={img}
+                  promptImg={promptImg}
+                  taskId={taskId}
+                  iteration={iteration}
+                  totalIteration={totalIteration}
+                  negativePrompt={negativePrompt}
+                  seed={seed}
+                  guidanceScale={guidanceScale}
+                  partialImg={partialImg}
+                  key={i}
+                />
+              ),
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
           {tasks.map(
             (
               {
@@ -247,7 +284,7 @@ export default function ImageGenerator() {
               },
               i,
             ) => (
-              <ImageResultCell
+              <ImageResult
                 img={img}
                 promptImg={promptImg}
                 taskId={taskId}
@@ -261,36 +298,7 @@ export default function ImageGenerator() {
               />
             ),
           )}
-        </div>
-      </div>
-      {tasks.map(
-        (
-          {
-            img,
-            promptImg,
-            taskId,
-            iteration,
-            totalIteration,
-            negativePrompt,
-            seed,
-            guidanceScale,
-            partialImg,
-          },
-          i,
-        ) => (
-          <ImageResult
-            img={img}
-            promptImg={promptImg}
-            taskId={taskId}
-            iteration={iteration}
-            totalIteration={totalIteration}
-            negativePrompt={negativePrompt}
-            seed={seed}
-            guidanceScale={guidanceScale}
-            partialImg={partialImg}
-            key={i}
-          />
-        ),
+        </>
       )}
     </>
   );
