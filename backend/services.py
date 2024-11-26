@@ -7,6 +7,7 @@ from diffusers.pipelines.stable_diffusion_3.pipeline_output import StableDiffusi
 import base64
 from io import BytesIO
 from PIL.Image import Image
+import PIL
 import os
 from dotenv import load_dotenv
 
@@ -44,10 +45,12 @@ external_sio = socketio.RedisManager('redis://{}/0'.format(REDIS_URL), write_onl
 HF_TOKEN = os.getenv('HF_TOKEN')
 print('hf token', HF_TOKEN)
 
+
 class GenerateImageTask(Task):
     def __init__(self):
         super().__init__()
         self.pipe = None
+        self.device = None
 
     def __call__(self, *args, **kwargs):
         if not self.pipe:
@@ -58,23 +61,50 @@ class GenerateImageTask(Task):
                 device = "mps"
             else:
                 device = "cpu"
+
             print('found device', device)
 
-
+            # Use mini sd for cpu to speed up inference at expense of quality.
             if device == 'cpu':
-                pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
+                pipe = StableDiffusionPipeline.from_pretrained(
+                    "lambdalabs/miniSD-diffusers",
+                    # ran into lots of false positives for small steps
+                    safety_checker = None,
+                    requires_safety_checker = False,
+                )
+
             else:
                 pipe = StableDiffusion3Pipeline.from_pretrained(
                     "stabilityai/stable-diffusion-3.5-medium",
                     torch_dtype=torch.bfloat16,
+                    # ran into lots of false positives for small steps
+                    safety_checker = None,
+                    requires_safety_checker = False,
                 )
+
 
 
             pipe.to(device)
             self.pipe = pipe
+            self.device = device
 
         return self.run(*args, **kwargs)
 
+
+
+def latents_to_rgb_cpu(latents):
+    weights = (
+        (60, -60, 25, -70),
+        (60,  -5, 15, -50),
+        (60,  10, -5, -35),
+    )
+
+    weights_tensor = torch.t(torch.tensor(weights, dtype=latents.dtype).to(latents.device))
+    biases_tensor = torch.tensor((150, 140, 130), dtype=latents.dtype).to(latents.device)
+    rgb_tensor = torch.einsum("...lxy,lr -> ...rxy", latents, weights_tensor) + biases_tensor.unsqueeze(-1).unsqueeze(-1)
+    image_array = rgb_tensor.clamp(0, 255).byte().cpu().numpy().transpose(1, 2, 0)
+
+    return PIL.Image.fromarray(image_array)
 
 
 def latents_to_rgb(latents,pipe):
@@ -105,16 +135,37 @@ def generate_image_task(self, imgPrompt: schemas.ImageCreate) -> Image:
 
         return callback_kwargs
 
+    def decode_tensors_cpu(pipe, step, timestep, callback_kwargs):
+        latents = callback_kwargs["latents"]
+
+        image = latents_to_rgb_cpu(latents[0])
+        image = image.resize((1024, 1024), PIL.Image.LANCZOS)
+
+        buffered = BytesIO()
+        image.save(buffered, format="JPEG", optimize=True, quality=25)
+        image_encoded = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+        external_sio.emit('task updated', {'taskId': taskId, 'iteration': step, 'image64': image_encoded})
+
+        return callback_kwargs
+
 
     image: Image = self.pipe(
         prompt=imgPrompt.prompt,
+        prompt_3=imgPrompt.prompt,
         negative_prompt=imgPrompt.negative_prompt,
         guidance_scale=imgPrompt.guidance_scale,
         num_inference_steps=imgPrompt.num_inference_steps,
         generator = generator,
-        callback_on_step_end=decode_tensors,
+        max_sequence_length=512,
+        callback_on_step_end=decode_tensors_cpu if self.device == 'cpu' else decode_tensors,
         callback_on_step_end_tensor_inputs=["latents"],
+        height = 256 if self.device == 'cpu' else 1024,
+        width = 256 if self.device == 'cpu' else 1024,
     ).images[0]
+
+    if self.device == 'cpu':
+        return image.resize((1024, 1024), PIL.Image.LANCZOS)
 
     return image
 
