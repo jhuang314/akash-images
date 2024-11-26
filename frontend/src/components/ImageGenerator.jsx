@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback, useContext } from "react";
 import ErrorMessage from "./ErrorMessage";
 import ImageResult from "./ImageResult";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretUp, faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCaretUp,
+  faCaretDown,
+  faArrowsRotate,
+} from "@fortawesome/free-solid-svg-icons";
 import { socket } from "../socket";
 import ImageResultCell from "./ImageResultCell";
 import { LayoutContext } from "../layout";
@@ -128,8 +132,6 @@ export default function ImageGenerator() {
         },
         ...tasks,
       ]);
-
-      cleanFormData();
     }
   };
 
@@ -219,6 +221,15 @@ export default function ImageGenerator() {
                       onChange={(e) => setNumInfSteps(e.target.value)}
                       className="input"
                     />
+                  </div>
+                </div>
+                <div className="control">
+                  <label className="label">&nbsp;</label>
+                  <div className="control">
+                    <button className="button" onClick={cleanFormData}>
+                      <FontAwesomeIcon icon={faArrowsRotate} />
+                      &nbsp; Reset settings
+                    </button>
                   </div>
                 </div>
               </div>

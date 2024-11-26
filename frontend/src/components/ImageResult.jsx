@@ -1,4 +1,7 @@
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCopy } from "@fortawesome/free-regular-svg-icons";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 export default function ImageResult({
   img,
@@ -16,13 +19,27 @@ export default function ImageResult({
       {img ? (
         <figure className="image">
           <img src={img} alt="generated" />
-          <figcaption>Prompt: "{promptImg}"</figcaption>
-          <figcaption>Total Steps: {totalIteration}</figcaption>
+          <figcaption>
+            Prompt: "{promptImg}" &nbsp;&nbsp;&nbsp;
+            <CopyToClipboard text={promptImg}>
+              <button>
+                <FontAwesomeIcon icon={faCopy}></FontAwesomeIcon>
+              </button>
+            </CopyToClipboard>
+          </figcaption>
           {negativePrompt ? (
-            <figcaption>Negative Prompt: "{negativePrompt}"</figcaption>
+            <figcaption>
+              Negative Prompt: "{negativePrompt}" &nbsp;&nbsp;&nbsp;
+              <CopyToClipboard text={negativePrompt}>
+                <button>
+                  <FontAwesomeIcon icon={faCopy}></FontAwesomeIcon>
+                </button>
+              </CopyToClipboard>
+            </figcaption>
           ) : (
             <></>
           )}
+          <figcaption>Total Steps: {totalIteration}</figcaption>
           {seed ? <figcaption>Seed: "{seed}"</figcaption> : <></>}
           {guidanceScale ? (
             <figcaption>Guidance Scale: "{guidanceScale}"</figcaption>

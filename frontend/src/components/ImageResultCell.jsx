@@ -1,9 +1,11 @@
 import React from "react";
 import { Portal } from "react-portal";
 import ImageFigure from "./ImageFigure";
-
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import { useState } from "react";
 import DownloadImageButton from "./DownloadImageButton";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCopy } from "@fortawesome/free-regular-svg-icons";
 
 function classNames(...args) {
   return args.filter(Boolean).join(" ");
@@ -46,15 +48,29 @@ export default function ImageResultCell({
           <div className="modal-content">
             <div className="box">
               <ImageFigure img={img} partialImg={partialImg} />
-              <p>Prompt: "{promptImg}"</p>
+              <p>
+                Prompt: "{promptImg}" &nbsp;&nbsp;&nbsp;
+                <CopyToClipboard text={promptImg}>
+                  <button>
+                    <FontAwesomeIcon icon={faCopy}></FontAwesomeIcon>
+                  </button>
+                </CopyToClipboard>
+              </p>
               {negativePrompt ? (
-                <p>Negative Prompt: "{negativePrompt}"</p>
+                <p>
+                  Negative Prompt: "{negativePrompt}" &nbsp;&nbsp;&nbsp;
+                  <CopyToClipboard text={negativePrompt}>
+                    <button>
+                      <FontAwesomeIcon icon={faCopy}></FontAwesomeIcon>
+                    </button>
+                  </CopyToClipboard>
+                </p>
               ) : (
                 <></>
               )}
               <p>Total Steps: {totalIteration}</p>
-              <p>Seed: "{seed}"</p>
-              <p>Guidance Scale: "{guidanceScale}"</p>
+              <p>Seed: {seed}</p>
+              <p>Guidance Scale: {guidanceScale}</p>
               <br />
 
               {img ? (
