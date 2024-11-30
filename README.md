@@ -7,9 +7,10 @@ Witness images materialize before your eyes in real time as the Diffusion's late
 
 0. [Quickstart Docker Build](#quickstart-docker-build)
 1. [Quickstart Deployment to Akash Network](#quickstart-deployment-to-akash-network)
-2. [Running locally](#running-locally-without-docker)
-3. [Akash customizations on top of Huggingface](#akash-customizations-on-top-of-huggingface)
-
+2. [Running locally without docker](#running-locally-without-docker)
+3. [Running locally using docker compose](#running-locally-using-docker-compose)
+4. [Important environment variables](#important-env-vars)
+5. [Technical Details](#technical-details)
 
 ## Quickstart Docker Build
 
@@ -397,7 +398,7 @@ docker compose up
 ```
 
 
-# Important env vars
+## Important env vars
 
 You can obtain your own [`HF_TOKEN` here](https://huggingface.co/docs/hub/en/security-tokens)
 
@@ -407,9 +408,9 @@ REDIS_URL=instance of redis (localhost:6379 if running locally, or redis:6379 if
 ```
 
 
-# Technical Details
+## Technical Details
 
-## Frontend
+### Frontend
 
 The frontend uses React, Bulma CSS, SocketIO, and FontAwesome. In a nutshell, the frontend provides
 
@@ -421,7 +422,7 @@ The frontend uses React, Bulma CSS, SocketIO, and FontAwesome. In a nutshell, th
  - dark vs light modes
  - ability to download generated images
 
-## FastAPI
+### FastAPI
 
 The `main.py` provies a FastAPI interface for accepting API requests to generate images. In a nutshell:
 
@@ -430,7 +431,7 @@ The `main.py` provies a FastAPI interface for accepting API requests to generate
  - GET /image/{task_id} responds with the genereated image
  - GET /{rest_of_path:path} responds with the frontend static files (serves the React UI assets)
 
-## Celery worker
+### Celery worker
 
 The `services.py` provides a Celery worker for processing image generation requests. In a nutshell:
 
