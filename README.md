@@ -4,6 +4,7 @@ Generate Images using GPU's and CPU's from the Akash Network!
 
 Witness images materialize before your eyes in real time as the Diffusion's latent data streams in via websockets!
 
+![Akash Image Generator thumbnail](https://raw.githubusercontent.com/jhuang314/akash-images/refs/heads/main/apple.gif)
 
 0. [Quickstart Docker Build](#quickstart-docker-build)
 1. [Quickstart Deployment to Akash Network](#quickstart-deployment-to-akash-network)
