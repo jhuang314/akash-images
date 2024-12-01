@@ -57,11 +57,11 @@ Here are the instructions for taking a Docker image and deploying it to the Akas
 
 Here are 2 sample YAML SDL's, depending on if you want to use CPU's vs GPU's. The CPU version uses `lambdalabs/miniSD-diffusers`
 to expedite image generation at the expense of quality, while the GPU version uses `stabilityai/stable-diffusion-3.5-medium`.
-The actual models can be modified in `backend/services.py`.
+The actual models can be modified in [`backend/services.py`](https://github.com/jhuang314/akash-images/blob/main/backend/services.py#L67-L83).
 
-For either SDL, replace `<YOUR_HF_TOKEN>` with your actual [HuggingFace token](https://huggingface.co/docs/hub/en/security-tokens)).
+For either SDL, replace `<YOUR_HF_TOKEN>` with your actual [HuggingFace token](https://huggingface.co/docs/hub/en/security-tokens).
 
-If you built and pushed your own Docker image, feel free to replace `jh3141/images:0.0.9` with your own.
+If you built and pushed your own Docker image, feel free to replace `jh3141/akash-images:0.0.9` with your own.
 
 **CPU version**
 ```yaml
